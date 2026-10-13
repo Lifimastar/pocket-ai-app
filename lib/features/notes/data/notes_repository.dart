@@ -25,7 +25,10 @@ class NotesRepository {
   }
 
   // Disparar el analisis con IA hacia nuestro microservicio FastAPI
-  Future<void> processNoteWithAI(String noteId, String content) async {
+  Future<Map<String, dynamic>> processNoteWithAI(
+    String noteId,
+    String content,
+  ) async {
     final response = await http.post(
       Uri.parse(_backendUrl),
       headers: {'Content-Type': 'application/json'},
@@ -35,5 +38,7 @@ class NotesRepository {
     if (response.statusCode != 200) {
       throw Exception('Fallo al analizar la nota: ${response.body}');
     }
+
+    return jsonDecode(response.body) as Map<String, dynamic>;
   }
 }

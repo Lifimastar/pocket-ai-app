@@ -62,6 +62,85 @@ class NotesScreen extends ConsumerWidget {
     );
   }
 
+  // Modal interactivo que muestra el analisis y las tareas extraidas
+  void _showActionItemsModal(
+    BuildContext context,
+    String summary,
+    List<dynamic> actionItems,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xff1e1e2c),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.auto_awesome, color: Colors.purpleAccent),
+                SizedBox(width: 8),
+                Text(
+                  'Analisis de IA & Tareas Extraidas',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Resumen Ejecutivo:',
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+            ),
+            const SizedBox(height: 4),
+            Text(summary),
+            const Divider(height: 24),
+            const Text(
+              'Puntos de Accion Detectados:',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.purpleAccent,
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (actionItems.isEmpty)
+              const Text('No se detectaron tareas pendientes especificas.')
+            else
+              ...actionItems.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(
+                        Icons.check_circle_outline,
+                        size: 18,
+                        color: Colors.greenAccent,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(item.toString())),
+                    ],
+                  ),
+                ),
+              ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cerrar'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notesAsync = ref.watch(notesListProvider);
@@ -158,10 +237,22 @@ class NotesScreen extends ConsumerWidget {
                                   content: Text('Procesando nota con IA...'),
                                 ),
                               );
-                              await ref
+                              final result = await ref
                                   .read(notesRepositoryProvider)
                                   .processNoteWithAI(note.id, note.content);
                               ref.invalidate(notesListProvider);
+
+                              if (context.mounted) {
+                                final summary = result['summary'] ?? '';
+                                final actionItems =
+                                    result['action_items'] as List<dynamic>? ??
+                                    [];
+                                _showActionItemsModal(
+                                  context,
+                                  summary,
+                                  actionItems,
+                                );
+                              }
                             },
                           ),
                         ),
