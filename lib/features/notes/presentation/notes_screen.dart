@@ -90,12 +90,84 @@ class NotesScreen extends ConsumerWidget {
               final note = notes[index];
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
-                child: ListTile(
-                  title: Text(
-                    note.title,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        note.title,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(note.content),
+                      const Divider(height: 24),
+                      if (note.summary != null) ...[
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.deepPurple.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.deepPurpleAccent),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Row(
+                                children: [
+                                  Icon(
+                                    Icons.auto_awesome,
+                                    size: 16,
+                                    color: Colors.purpleAccent,
+                                  ),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'Resumen Inteligente (IA)',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.purpleAccent,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                note.summary!,
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ] else ...[
+                        Align(
+                          alignment: AlignmentGeometry.centerRight,
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.auto_awesome, size: 16),
+                            label: const Text('Analizar con IA'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.deepPurple,
+                              foregroundColor: Colors.white,
+                            ),
+                            onPressed: () async {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Procesando nota con IA...'),
+                                ),
+                              );
+                              await ref
+                                  .read(notesRepositoryProvider)
+                                  .processNoteWithAI(note.id, note.content);
+                              ref.invalidate(notesListProvider);
+                            },
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                  subtitle: Text(note.content),
                 ),
               );
             },
