@@ -2,10 +2,20 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../domain/note_model.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 
 class NotesRepository {
   final SupabaseClient _client = Supabase.instance.client;
-  final String _backendUrl = 'http://localhost:8000/api/v1/analyze-note';
+  String get _backendUrl {
+    if (kIsWeb) {
+      return 'http://localhost:8000/api/v1/analyze-note';
+    } else if (Platform.isAndroid) {
+      return 'http://10.0.2.2:8000/api/v1/analyze-note';
+    } else {
+      return 'http://localhost:8000/api/v1/analyze-note';
+    }
+  }
 
   // obtener notas
   Future<List<NoteModel>> getNotes() async {
